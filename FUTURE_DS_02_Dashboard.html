@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Customer Retention & Churn Analysis | Future Interns DS-02</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:rgba(255,255,255,0.07);--green:#0F6E56;--red:#A32D2D;--blue:#185FA5;--amber:#854F0B;--purple:#533AB7;--text:#f1f5f9;--muted:#94a3b8}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+  header{background:linear-gradient(135deg,#0a0e1a,#0a1f1a);border-bottom:1px solid var(--border);padding:26px 40px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .logo{width:40px;height:40px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .ht h1{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+  .ht p{font-size:12px;color:var(--muted);margin-top:1px}
+  .pill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid}
+  .pill-green{background:rgba(15,110,86,0.15);color:#2ecc71;border-color:rgba(15,110,86,0.3)}
+  .pill-red{background:rgba(163,45,45,0.15);color:#e74c3c;border-color:rgba(163,45,45,0.3)}
+  main{max-width:1400px;margin:0 auto;padding:28px 32px 60px}
+  .sec{font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border)}
+  .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .kpi-lbl{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+  .kpi-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+  .kpi-val.g{color:#2ecc71}.kpi-val.r{color:#e74c3c}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .grid{display:grid;gap:14px;margin-bottom:14px}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1.8fr 1fr}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;transition:box-shadow .2s}
+  .card:hover{box-shadow:0 8px 28px rgba(0,0,0,0.4)}
+  .ct{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px}
+  .cs{font-size:11px;color:var(--muted);margin-bottom:14px}
+  .cleg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:11px;color:var(--muted)}
+  .cleg span{display:flex;align-items:center;gap:4px}
+  .sw{width:9px;height:9px;border-radius:2px}
+  canvas{max-height:240px}
+  .cohort-table{width:100%;border-collapse:collapse;font-size:12px}
+  .cohort-table th{font-size:11px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.4px}
+  .cohort-table td{padding:7px 8px;border-bottom:1px solid var(--border)}
+  .cohort-table tr:last-child td{border-bottom:none}
+  .bar-track{height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:4px}
+  .bar-fill{height:100%;border-radius:4px}
+  .insight-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ins{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;gap:12px}
+  .ii{font-size:22px;margin-top:2px}
+  .it{font-size:13px;font-weight:600;margin-bottom:4px}
+  .ib{font-size:12px;color:var(--muted);line-height:1.6}
+  footer{border-top:1px solid var(--border);padding:18px 40px;text-align:center;font-size:11px;color:var(--muted)}
+  footer strong{color:var(--green)}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div class="logo">👥</div>
+    <div class="ht"><h1>Customer Retention & Churn Analysis</h1><p>Future Interns · FUTURE_DS_02 · Data Science & Analytics · FY 2023–24</p></div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <span class="pill pill-green">✓ Task 2</span>
+    <span class="pill pill-red">⚠ Churn: 31.5%</span>
+  </div>
+</header>
+<main>
+  <div class="sec">Key Performance Indicators</div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-lbl">Total Customers</div><div class="kpi-val">1,200</div><div class="kpi-sub">Jan 2023 – Jun 2024</div></div>
+    <div class="kpi"><div class="kpi-lbl">Active</div><div class="kpi-val g">822</div><div class="kpi-sub">68.5% retention</div></div>
+    <div class="kpi"><div class="kpi-lbl">Churned</div><div class="kpi-val r">378</div><div class="kpi-sub">31.5% churn rate</div></div>
+    <div class="kpi"><div class="kpi-lbl">MRR (Active)</div><div class="kpi-val" style="font-size:17px;padding-top:3px">₹4.69L</div><div class="kpi-sub">Monthly recurring</div></div>
+    <div class="kpi"><div class="kpi-lbl">Avg CLV</div><div class="kpi-val" style="font-size:17px;padding-top:3px">₹6,875</div><div class="kpi-sub">Per customer</div></div>
+    <div class="kpi"><div class="kpi-lbl">Avg Tenure Active</div><div class="kpi-val" style="font-size:17px;padding-top:3px">14.6 mo</div><div class="kpi-sub">vs 6.0 mo churned</div></div>
+  </div>
+  <div class="sec">Churn Breakdown</div>
+  <div class="grid g3">
+    <div class="card">
+      <div class="ct">Churn Reasons Distribution</div><div class="cs">Primary reasons customers cancelled their subscription</div>
+      <canvas id="c1"></canvas>
+    </div>
+    <div class="card">
+      <div class="ct">Churn vs Retention</div><div class="cs">Overall customer base split</div>
+      <div class="cleg"><span><span class="sw" style="background:#0F6E56"></span>Retained 68.5%</span><span><span class="sw" style="background:#A32D2D"></span>Churned 31.5%</span></div>
+      <canvas id="c2"></canvas>
+    </div>
+  </div>
+  <div class="sec">Plan & Channel Analysis</div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="ct">Churn Rate & Avg CLV by Plan</div><div class="cs">How subscription tier impacts churn and lifetime value</div>
+      <div class="cleg"><span><span class="sw" style="background:#A32D2D"></span>Churn rate %</span><span><span class="sw" style="background:#0F6E56"></span>Avg CLV (scaled ÷10)</span></div>
+      <canvas id="c3"></canvas>
+    </div>
+    <div class="card">
+      <div class="ct">Churn Rate by Acquisition Channel</div><div class="cs">Which channels bring the most loyal customers</div>
+      <canvas id="c4"></canvas>
+    </div>
+  </div>
+  <div class="sec">Cohort Retention & Tenure</div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="ct">Cohort Retention Rate</div><div class="cs">Month-of-signup cohorts — Jan 2023 to Jun 2023</div>
+      <table class="cohort-table"><thead><tr><th>Cohort</th><th>Customers</th><th>Churned</th><th>Retention</th><th>Rate</th></tr></thead><tbody id="ctbody"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="ct">Tenure Distribution: Active vs Churned</div><div class="cs">When customers typically leave vs stay</div>
+      <div class="cleg"><span><span class="sw" style="background:#0F6E56"></span>Active</span><span><span class="sw" style="background:#A32D2D"></span>Churned</span></div>
+      <canvas id="c5"></canvas>
+    </div>
+  </div>
+  <div class="sec">Actionable Insights & Recommendations</div>
+  <div class="insight-row">
+    <div class="ins"><div class="ii">💸</div><div><div class="it">Price is the #1 churn driver (32.3%)</div><div class="ib">122 customers left citing high price. Introduce annual plans with 20–30% discount and a "pause" option to retain price-sensitive users before they cancel.</div></div></div>
+    <div class="ins"><div class="ii">⏱️</div><div><div class="it">First 6 months are the danger window</div><div class="ib">Churned customers leave at avg 6 months vs 14.6 for active. Launch automated onboarding sequences at day 1, 7, 14, and 30 with in-app feature discovery.</div></div></div>
+    <div class="ins"><div class="ii">⬆️</div><div><div class="it">Upsell Basic customers to reduce churn</div><div class="ib">Basic plan churns at 34% vs Premium at 27%. A targeted upgrade campaign boosts both retention and MRR simultaneously.</div></div></div>
+    <div class="ins"><div class="ii">🔗</div><div><div class="it">Fix referral channel — highest churn (34%)</div><div class="ib">Referral customers churn most despite low CAC. Revisit referral messaging and add a dedicated onboarding variant for referred signups.</div></div></div>
+  </div>
+</main>
+<footer>1,200 customers · 3 plans · 5 channels · Jan 2023 – Jun 2024 · <strong>Future Interns FUTURE_DS_02</strong></footer>
+<script>
+Chart.defaults.color='#94a3b8';Chart.defaults.font.family='DM Sans';
+const tip={backgroundColor:'#1a2235',borderColor:'rgba(255,255,255,0.1)',borderWidth:0.5,padding:10};
+const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:tip}};
+const gc='rgba(255,255,255,0.05)';
+new Chart('c1',{type:'bar',data:{labels:['Price too high','Better competitor','Lack of features','Poor support','No longer needed','Technical issues'],datasets:[{data:[122,83,68,53,38,14],backgroundColor:['#A32D2D','#854F0B','#185FA5','#533AB7','#0F6E56','#555'],borderRadius:5,borderSkipped:false}]},options:{...base,indexAxis:'y',scales:{x:{grid:{color:gc},ticks:{color:'#94a3b8',font:{size:11}},border:{display:false}},y:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:11}},border:{display:false}}}}});
+new Chart('c2',{type:'doughnut',data:{labels:['Retained','Churned'],datasets:[{data:[68.5,31.5],backgroundColor:['#0F6E56','#A32D2D'],borderColor:'#111827',borderWidth:3,hoverOffset:6}]},options:{...base,cutout:'62%',plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:ctx=>' '+ctx.label+': '+ctx.raw+'%'}}}}});
+new Chart('c3',{type:'bar',data:{labels:['Basic','Standard','Premium'],datasets:[{label:'Churn %',data:[34,31,27],backgroundColor:'#A32D2D',borderRadius:5,borderSkipped:false},{label:'CLV',data:[320,650,1280],backgroundColor:'#0F6E56',borderRadius:5,borderSkipped:false}]},options:{...base,plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>ctx.datasetIndex===0?' Churn: '+ctx.raw+'%':' CLV: ₹'+(ctx.raw*10).toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:'#94a3b8'},border:{display:false}},y:{grid:{color:gc},ticks:{color:'#94a3b8'},border:{display:false}}}}});
+new Chart('c4',{type:'bar',data:{labels:['Referral','Paid Ads','Social Media','Organic','Email'],datasets:[{data:[34.0,33.2,31.8,29.5,28.7],backgroundColor:['#A32D2D','#854F0B','#533AB7','#185FA5','#0F6E56'],borderRadius:5,borderSkipped:false}]},options:{...base,indexAxis:'y',scales:{x:{grid:{color:gc},min:25,ticks:{color:'#94a3b8',font:{size:11},callback:v=>v+'%'},border:{display:false}},y:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:11}},border:{display:false}}},plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>' '+ctx.raw+'% churn'}}}}});
+new Chart('c5',{type:'bar',data:{labels:['1–3','4–6','7–9','10–12','13–15','16–18','19–21','22–24'],datasets:[{label:'Active',data:[18,55,95,148,160,145,100,81],backgroundColor:'rgba(15,110,86,0.75)',borderRadius:3,borderSkipped:false},{label:'Churned',data:[62,112,88,60,35,15,6,0],backgroundColor:'rgba(163,45,45,0.75)',borderRadius:3,borderSkipped:false}]},options:{...base,scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:10}},border:{display:false}},y:{grid:{color:gc},ticks:{color:'#94a3b8',font:{size:10}},border:{display:false}}},plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.raw+' customers'}}}}});
+const cohorts=[{c:'Jan 2023',t:69,ch:21,r:69.6},{c:'Feb 2023',t:61,ch:22,r:63.9},{c:'Mar 2023',t:68,ch:28,r:58.8},{c:'Apr 2023',t:66,ch:16,r:75.8},{c:'May 2023',t:68,ch:19,r:72.1},{c:'Jun 2023',t:66,ch:20,r:69.7}];
+const tb=document.getElementById('ctbody');
+cohorts.forEach(r=>{const col=r.r>=70?'#2ecc71':r.r>=60?'#f39c12':'#e74c3c';tb.innerHTML+=`<tr><td>${r.c}</td><td>${r.t}</td><td style="color:#e74c3c">${r.ch}</td><td><div class="bar-track"><div class="bar-fill" style="width:${r.r}%;background:${col}"></div></div></td><td style="font-weight:600;color:${col}">${r.r}%</td></tr>`;});
+</script>
+</body>
+</html>
