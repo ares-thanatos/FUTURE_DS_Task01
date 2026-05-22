@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Business Sales Performance Analytics | Future Interns DS-01</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.07);
+    --accent: #3b82f6;
+    --accent2: #f59e0b;
+    --accent3: #10b981;
+    --accent4: #ef4444;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --glow: rgba(59,130,246,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f1e3d 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo-badge {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; font-family: 'Syne', sans-serif;
+  }
+  .header-title h1 {
+    font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .header-title p { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .badge {
+    background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3);
+    color: var(--accent); font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .badge.green { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); color: var(--accent3); }
+
+  /* ── MAIN ── */
+  main { max-width: 1400px; margin: 0 auto; padding: 32px 32px 60px; }
+
+  /* ── KPI STRIP ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  @media(max-width:1100px){ .kpi-grid { grid-template-columns: repeat(3,1fr); } }
+  @media(max-width:650px){ .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--kpi-color, var(--accent));
+  }
+  .kpi-icon {
+    font-size: 22px; margin-bottom: 8px;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--kpi-bg, rgba(59,130,246,0.12));
+    display: flex; align-items: center; justify-content: center;
+  }
+  .kpi-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-top: 4px; line-height: 1.1; }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* ── CHART GRID ── */
+  .chart-grid {
+    display: grid;
+    gap: 18px;
+  }
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  .row-3 { grid-template-columns: 2fr 1fr; }
+  .row-1 { grid-template-columns: 1fr; }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 22px 18px;
+    transition: box-shadow .2s;
+  }
+  .chart-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+  .chart-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+  .chart-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+  .chart-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .chart-container { position: relative; }
+  .chart-container canvas { max-height: 280px; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px;
+    margin: 28px 0 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── INSIGHTS TABLE ── */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 14px;
+  }
+  .insight-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .insight-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .insight-icon.blue { background: rgba(59,130,246,0.15); }
+  .insight-icon.amber { background: rgba(245,158,11,0.15); }
+  .insight-icon.green { background: rgba(16,185,129,0.15); }
+  .insight-icon.red { background: rgba(239,68,68,0.15); }
+  .insight-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .insight-text p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  footer strong { color: var(--accent); }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px;
+    align-items: center;
+  }
+  .filter-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .filter-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 20px; padding: 5px 14px;
+    font-size: 12px; cursor: pointer; transition: all .15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+
+  .spacer { height: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-badge">DS</div>
+    <div class="header-title">
+      <h1>Business Sales Performance Analytics</h1>
+      <p>Future Interns · Task 1 · FUTURE_DS_01 · FY 2024</p>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <span class="badge">Data Science & Analytics</span>
+    <span class="badge green">Live Dashboard</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI STRIP -->
+  <div class="section-label">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:#3b82f6;--kpi-bg:rgba(59,130,246,0.12)">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">₹36.58M</div>
+      <div class="kpi-sub">FY 2024</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#10b981;--kpi-bg:rgba(16,185,129,0.12)">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Units Sold</div>
+      <div class="kpi-value">1,50,390</div>
+      <div class="kpi-sub">Across all regions</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#f59e0b;--kpi-bg:rgba(245,158,11,0.12)">
+      <div class="kpi-icon">🏆</div>
+      <div class="kpi-label">Top Product</div>
+      <div class="kpi-value" style="font-size:16px">Headphones</div>
+      <div class="kpi-sub">₹4.61M revenue</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#8b5cf6;--kpi-bg:rgba(139,92,246,0.12)">
+      <div class="kpi-icon">🏅</div>
+      <div class="kpi-label">Top Category</div>
+      <div class="kpi-value" style="font-size:16px">Electronics</div>
+      <div class="kpi-sub">Highest revenue share</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#ef4444;--kpi-bg:rgba(239,68,68,0.12)">
+      <div class="kpi-icon">🌏</div>
+      <div class="kpi-label">Top Region</div>
+      <div class="kpi-value" style="font-size:16px">East</div>
+      <div class="kpi-sub">Leading market</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#06b6d4;--kpi-bg:rgba(6,182,212,0.12)">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-label">Avg Order Value</div>
+      <div class="kpi-value">₹38.1K</div>
+      <div class="kpi-sub">Per transaction</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Revenue Trend (full width) -->
+  <div class="section-label">Revenue Trends</div>
+  <div class="chart-grid row-1">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Monthly Revenue Trend</div>
+          <div class="chart-sub">January – December 2024 · All regions combined</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- ROW 2: Top Products + Category Pie -->
+  <div class="chart-grid row-3">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Top 10 Products by Revenue</div>
+          <div class="chart-sub">Ranked across all categories & regions</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="productsChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Revenue by Category</div>
+          <div class="chart-sub">Market share distribution</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- ROW 3: Regional + Quarterly -->
+  <div class="chart-grid row-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Regional Revenue Comparison</div>
+          <div class="chart-sub">Performance across North · South · East · West</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="regionChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Quarterly Revenue by Category</div>
+          <div class="chart-sub">Q1 – Q4 breakdown per category</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="quarterlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="section-label">Actionable Insights & Recommendations</div>
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-icon blue">📈</div>
+      <div class="insight-text">
+        <h4>Electronics Dominates Revenue</h4>
+        <p>Electronics accounts for the largest revenue share, led by Headphones (₹4.61M) and Smart Watch (₹4.40M). Invest more in Electronics marketing and stock depth — especially in East region.</p>
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon amber">⚠️</div>
+      <div class="insight-text">
+        <h4>South Region is Underperforming</h4>
+        <p>The South region consistently lags behind other regions. Launch targeted regional campaigns, offer region-specific promotions, and strengthen distributor partnerships in the South.</p>
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon green">🌟</div>
+      <div class="insight-text">
+        <h4>May is the Peak Revenue Month</h4>
+        <p>May 2024 recorded the highest revenue (₹3.67M). Plan major product launches and promotional events around April–May to capitalize on seasonal demand spikes.</p>
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon red">💸</div>
+      <div class="insight-text">
+        <h4>Discount Strategy Needs Review</h4>
+        <p>11.5% of total revenue comes from orders with discounts above 25%. This erodes profit margins. Consider tiered discount caps and loyalty programs instead of blanket discounts.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Built for <strong>Future Interns · FUTURE_DS_01</strong> · Data Science & Analytics Track · 
+  Dataset: FY 2024 · 960 records · 4 regions · 4 categories · 20 products
+</footer>
+
+<script>
+// ── CHART.JS GLOBAL DEFAULTS ──────────────────────────────────────────────────
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font.family = 'DM Sans';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 8;
+
+const COLORS = ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#84cc16','#14b8a6'];
+
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const monthly = [
+  {month:'Jan 2024',revenue:3365340},{month:'Feb 2024',revenue:2515706},
+  {month:'Mar 2024',revenue:2928780},{month:'Apr 2024',revenue:3021316},
+  {month:'May 2024',revenue:3669103},{month:'Jun 2024',revenue:3181772},
+  {month:'Jul 2024',revenue:2272000},{month:'Aug 2024',revenue:3319486},
+  {month:'Sep 2024',revenue:3667886},{month:'Oct 2024',revenue:2875951},
+  {month:'Nov 2024',revenue:2942188},{month:'Dec 2024',revenue:2818177},
+];
+
+const top10 = [
+  {product:'Headphones',revenue:4605232},{product:'Smart Watch',revenue:4403679},
+  {product:'Smartphone',revenue:4261145},{product:'Laptop',revenue:3937393},
+  {product:'Tablet',revenue:3840485},{product:'Sofa',revenue:2015000},
+  {product:'Dumbbells',revenue:1832000},{product:'Jacket',revenue:1750000},
+  {product:'Cookware Set',revenue:1620000},{product:'Running Shoes',revenue:1410000},
+];
+
+const categories = [
+  {category:'Electronics',revenue:20547934},{category:'Home & Living',revenue:6800000},
+  {category:'Apparel',revenue:5430000},{category:'Sports',revenue:3800000},
+];
+
+const regions = [
+  {region:'East',revenue:9750000},{region:'North',revenue:9400000},
+  {region:'West',revenue:9100000},{region:'South',revenue:8327706},
+];
+
+const quarterly = [
+  {quarter:'Q1',category:'Electronics',revenue:5100000},
+  {quarter:'Q1',category:'Apparel',revenue:1350000},
+  {quarter:'Q1',category:'Home & Living',revenue:1700000},
+  {quarter:'Q1',category:'Sports',revenue:960000},
+  {quarter:'Q2',category:'Electronics',revenue:5400000},
+  {quarter:'Q2',category:'Apparel',revenue:1400000},
+  {quarter:'Q2',category:'Home & Living',revenue:1750000},
+  {quarter:'Q2',category:'Sports',revenue:1020000},
+  {quarter:'Q3',category:'Electronics',revenue:5200000},
+  {quarter:'Q3',category:'Apparel',revenue:1350000},
+  {quarter:'Q3',category:'Home & Living',revenue:1720000},
+  {quarter:'Q3',category:'Sports',revenue:990000},
+  {quarter:'Q4',category:'Electronics',revenue:4847934},
+  {quarter:'Q4',category:'Apparel',revenue:1330000},
+  {quarter:'Q4',category:'Home & Living',revenue:1630000},
+  {quarter:'Q4',category:'Sports',revenue:830000},
+];
+
+const fmt = v => '₹' + (v >= 1e6 ? (v/1e6).toFixed(2)+'M' : (v/1e3).toFixed(1)+'K');
+
+// ── 1. MONTHLY TREND ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'line',
+  data: {
+    labels: monthly.map(d => d.month),
+    datasets: [{
+      label: 'Monthly Revenue',
+      data: monthly.map(d => d.revenue),
+      borderColor: '#3b82f6',
+      backgroundColor: ctx => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,260);
+        g.addColorStop(0,'rgba(59,130,246,0.35)');
+        g.addColorStop(1,'rgba(59,130,246,0.01)');
+        return g;
+      },
+      fill: true, tension: 0.4, pointRadius: 5,
+      pointBackgroundColor: '#3b82f6', pointBorderColor: '#0a0e1a',
+      pointBorderWidth: 2, borderWidth: 2.5,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: ctx => ' ' + fmt(ctx.raw) },
+        backgroundColor: '#1a2235', borderColor: 'rgba(59,130,246,0.3)',
+        borderWidth: 1, padding: 10,
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font:{size:11} } },
+      y: {
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        ticks: { callback: v => fmt(v), font:{size:11} }
+      }
+    }
+  }
+});
+
+// ── 2. TOP PRODUCTS ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('productsChart'), {
+  type: 'bar',
+  data: {
+    labels: top10.map(d => d.product),
+    datasets: [{
+      label: 'Revenue',
+      data: top10.map(d => d.revenue),
+      backgroundColor: COLORS,
+      borderRadius: 6, borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: ctx => ' ' + fmt(ctx.raw) },
+        backgroundColor: '#1a2235', borderColor: 'rgba(255,255,255,0.1)', borderWidth:1,
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        ticks: { callback: v => fmt(v), font:{size:10} }
+      },
+      y: { grid: { display: false }, ticks: { font:{size:11} } }
+    }
+  }
+});
+
+// ── 3. CATEGORY PIE ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('categoryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: categories.map(d => d.category),
+    datasets: [{
+      data: categories.map(d => d.revenue),
+      backgroundColor: ['#3b82f6','#f59e0b','#10b981','#8b5cf6'],
+      borderColor: '#111827', borderWidth: 3, hoverOffset: 8,
+    }]
+  },
+  options: {
+    cutout: '62%', responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 14, font:{size:11} } },
+      tooltip: {
+        callbacks: { label: ctx => ' ' + ctx.label + ': ' + fmt(ctx.raw) },
+        backgroundColor: '#1a2235', borderColor: 'rgba(255,255,255,0.1)', borderWidth:1,
+      }
+    }
+  }
+});
+
+// ── 4. REGION BAR ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('regionChart'), {
+  type: 'bar',
+  data: {
+    labels: regions.map(d => d.region),
+    datasets: [{
+      label: 'Revenue',
+      data: regions.map(d => d.revenue),
+      backgroundColor: ['#3b82f6','#8b5cf6','#10b981','#ef4444'],
+      borderRadius: 8, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: ctx => ' ' + fmt(ctx.raw) },
+        backgroundColor: '#1a2235', borderColor: 'rgba(255,255,255,0.1)', borderWidth:1,
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font:{size:12} } },
+      y: {
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        ticks: { callback: v => fmt(v), font:{size:11} }
+      }
+    }
+  }
+});
+
+// ── 5. QUARTERLY GROUPED ─────────────────────────────────────────────────────
+const quarters = ['Q1','Q2','Q3','Q4'];
+const cats = ['Electronics','Apparel','Home & Living','Sports'];
+const catColors = ['#3b82f6','#f59e0b','#10b981','#8b5cf6'];
+
+const qtrDatasets = cats.map((cat, i) => ({
+  label: cat,
+  data: quarters.map(q => {
+    const found = quarterly.find(r => r.quarter === q && r.category === cat);
+    return found ? found.revenue : 0;
+  }),
+  backgroundColor: catColors[i],
+  borderRadius: 5, borderSkipped: false,
+}));
+
+new Chart(document.getElementById('quarterlyChart'), {
+  type: 'bar',
+  data: { labels: quarters, datasets: qtrDatasets },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels:{ padding:12, font:{size:11} } },
+      tooltip: {
+        callbacks: { label: ctx => ' '+ctx.dataset.label+': '+fmt(ctx.raw) },
+        backgroundColor: '#1a2235', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+      }
+    },
+    scales: {
+      x: { grid:{ display:false }, ticks:{ font:{size:12} } },
+      y: {
+        grid:{ color:'rgba(255,255,255,0.04)' },
+        ticks:{ callback: v => fmt(v), font:{size:10} }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
